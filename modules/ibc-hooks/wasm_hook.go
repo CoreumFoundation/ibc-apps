@@ -404,8 +404,8 @@ func MustExtractDenomFromPacketOnRecv(packet ibcexported.PacketI) string {
 	}
 
 	var denom string
-	voucherPrefix := transfertypes.NewHop(packet.GetSourcePort(), packet.GetSourceChannel()).String()
-	if strings.HasPrefix(denom, voucherPrefix) {
+	voucherPrefix := GetDenomPrefix(packet.GetSourcePort(), packet.GetSourceChannel())
+	if strings.HasPrefix(data.Denom, voucherPrefix) {
 		unprefixedDenom := data.Denom[len(voucherPrefix):]
 
 		// coin denomination used in sending from the escrow address
@@ -418,8 +418,13 @@ func MustExtractDenomFromPacketOnRecv(packet ibcexported.PacketI) string {
 			denom = denomTrace.IBCDenom()
 		}
 	} else {
-		prefixedDenom := transfertypes.NewHop(packet.GetDestPort(), packet.GetDestChannel()).String() + data.Denom
+		prefixedDenom := GetDenomPrefix(packet.GetDestPort(), packet.GetDestChannel()) + data.Denom
 		denom = transfertypes.ExtractDenomFromPath(prefixedDenom).IBCDenom()
 	}
 	return denom
+}
+
+// GetDenomPrefix returns the receiving denomination prefix
+func GetDenomPrefix(portID, channelID string) string {
+	return transfertypes.NewHop(portID, channelID).String() + "/"
 }
