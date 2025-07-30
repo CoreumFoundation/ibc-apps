@@ -3,6 +3,7 @@ package ibc_hooks
 import (
 	"encoding/json"
 	"fmt"
+	"strings"
 
 	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
@@ -402,20 +403,23 @@ func MustExtractDenomFromPacketOnRecv(packet ibcexported.PacketI) string {
 		panic("unable to unmarshal ICS20 packet data")
 	}
 
-	denom := transfertypes.ExtractDenomFromPath(data.Denom)
-	if denom.HasPrefix(packet.GetSourcePort(), packet.GetSourceChannel()) {
-		// unwind denom
-		denom.Trace = denom.Trace[1:]
-		if len(denom.Trace) == 0 {
-			// denom is now unwound back to native denom
-			return denom.Path()
-		}
-		// denom is still IBC denom
-		return denom.IBCDenom()
-	}
-	// append port and channel from this chain to denom
-	trace := []transfertypes.Hop{transfertypes.NewHop(packet.GetSourcePort(), packet.GetSourceChannel())}
-	denom.Trace = append(trace, denom.Trace...)
+	var denom string
+	voucherPrefix := transfertypes.NewHop(packet.GetSourcePort(), packet.GetSourceChannel()).String()
+	if strings.HasPrefix(denom, voucherPrefix) {
+		unprefixedDenom := data.Denom[len(voucherPrefix):]
 
-	return denom.IBCDenom()
+		// coin denomination used in sending from the escrow address
+		denom = unprefixedDenom
+
+		// The denomination used to send the coins is either the native denom or the hash of the path
+		// if the denomination is not native.
+		denomTrace := transfertypes.ExtractDenomFromPath(unprefixedDenom)
+		if !denomTrace.IsNative() {
+			denom = denomTrace.IBCDenom()
+		}
+	} else {
+		prefixedDenom := transfertypes.NewHop(packet.GetDestPort(), packet.GetDestChannel()).String() + data.Denom
+		denom = transfertypes.ExtractDenomFromPath(prefixedDenom).IBCDenom()
+	}
+	return denom
 }
