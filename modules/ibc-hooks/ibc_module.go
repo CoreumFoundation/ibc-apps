@@ -221,7 +221,7 @@ func (im IBCMiddleware) OnTimeoutPacket(
 	relayer sdk.AccAddress,
 ) error {
 	if hook, ok := im.ICS4Middleware.Hooks.(OnTimeoutPacketOverrideHooks); ok {
-		return hook.OnTimeoutPacketOverride(im, ctx, packet, relayer)
+		return hook.OnTimeoutPacketOverride(im, ctx, channelVersion, packet, relayer)
 	}
 
 	if hook, ok := im.ICS4Middleware.Hooks.(OnTimeoutPacketBeforeHooks); ok {

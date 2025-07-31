@@ -21,6 +21,11 @@ import (
 	ibcexported "github.com/cosmos/ibc-go/v10/modules/core/exported"
 )
 
+var _ OnRecvPacketOverrideHooks = WasmHooks{}
+var _ SendPacketOverrideHooks = WasmHooks{}
+var _ OnTimeoutPacketOverrideHooks = WasmHooks{}
+var _ OnAcknowledgementPacketOverrideHooks = WasmHooks{}
+
 type ContractAck struct {
 	ContractResult []byte `json:"contract_result"`
 	IbcAck         []byte `json:"ibc_ack"`

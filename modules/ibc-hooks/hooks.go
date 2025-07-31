@@ -102,7 +102,7 @@ type OnAcknowledgementPacketAfterHooks interface {
 
 // OnTimeoutPacket Hooks
 type OnTimeoutPacketOverrideHooks interface {
-	OnTimeoutPacketOverride(im IBCMiddleware, ctx sdk.Context, packet channeltypes.Packet, relayer sdk.AccAddress) error
+	OnTimeoutPacketOverride(im IBCMiddleware, ctx sdk.Context, channelVersion string, packet channeltypes.Packet, relayer sdk.AccAddress) error
 }
 type OnTimeoutPacketBeforeHooks interface {
 	OnTimeoutPacketBeforeHook(ctx sdk.Context, packet channeltypes.Packet, relayer sdk.AccAddress)
